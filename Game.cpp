@@ -144,6 +144,7 @@ void Game::Update(GLfloat dt)
 {
   this->Time += dt;
   GLfloat dtBuf = dt;
+  GLint lines = 1;
   // Ball->Move(dt, this->Width);
   this->DoCollisions();
   // std::cout << this->PeriodOpen << std::endl;
@@ -152,16 +153,23 @@ void Game::Update(GLfloat dt)
   {
     if (i > 0)
       if (this->Levels[this->Level].TimeSpawn[i] == this->Levels[this->Level].TimeSpawn[i - 1])
+      {
         dtBuf = dtBuf * 2;
+        lines++;
+      }
       else
+      {
         dtBuf = dt;
-    if (this->Time > this->Levels[this->Level].TimeSpawn[i] - dtBuf*2 && this->Time < this->Levels[this->Level].TimeSpawn[i] + dtBuf * 2)
-      this->Levels[this->Level].SpawnEnemys();
+        lines = 1;
+      }
+    if (this->Time >= this->Levels[this->Level].TimeSpawn[i] && this->Time < this->Levels[this->Level].TimeSpawn[i] + dtBuf)
+      this->Levels[this->Level].SpawnEnemys(i, lines);
   }
   this->UpdatePlayer(dt);
   this->UpdatePowerUps(dt);
   this->SpawnBullets(dt);
   this->UpdateBullets(dt);
+  this->UpdateEnemys(dt);
   if (ShakeTime > 0.0f)
   {
     ShakeTime -= dt;
@@ -356,6 +364,15 @@ Direction VectorDirection(glm::vec2 closest);
 GLboolean ShouldSpawn(GLuint chance);
 void ActivatePowerUp(PowerUp &powerUp);
 GLboolean isOtherPowerUpActive(std::vector<PowerUp> &powerUps, std::string type);
+
+void Game::UpdateEnemys(GLfloat dt)
+{
+  for(GLint i = 0; i < this->Levels[this->Level].Enemys.size(); ++i)
+  {
+    this->Levels[this->Level].Enemys[i].Position +=  this->Levels[this->Level].Enemys[i].Velocity * dt;
+    // this->Levels[this->Level].Enemys[i].Position +=  glm::vec2(0, 50) * dt;
+  }
+}
 
 void Game::UpdatePlayer(GLfloat dt)
 {

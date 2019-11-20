@@ -69,6 +69,7 @@ public:
   void SpawnBullets(GLfloat dt);
   void UpdateBullets(GLfloat dt);
   void UpdatePlayer(GLfloat dt);
+  void UpdateEnemys(GLfloat dt);
 
   GLuint Lives;
   GLboolean KeysProcessed[1024];

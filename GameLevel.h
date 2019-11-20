@@ -26,7 +26,7 @@ public:
   void Draw(SpriteRenderer &renderer);
 
   GLboolean IsCompleted();
-  void SpawnEnemys();
+  void SpawnEnemys(GLint wave, GLint line);
 private:
   void init(std::vector<std::vector<GLuint>> tileData);
 };

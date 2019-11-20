@@ -115,13 +115,14 @@ void GameLevel::init(std::vector<std::vector<GLuint>> tileData)
   // this->Enemys.push_back(obj);
 }
 
-void GameLevel::SpawnEnemys()
+void GameLevel::SpawnEnemys(GLint wave, GLint line)
 {
-  for (GLuint i = 0; i < this->NumberEnemy[0]; ++i)
+  for (GLint i = 0; i < this->NumberEnemy[wave]; ++i)
   {
-    glm::vec2 pos(400, 100 + 200 * i);
+    GLfloat posy = -100 -150*i;
+    glm::vec2 pos(200 + 100 * this->Line[wave], posy);
     glm::vec2 size(50, 100);
-    Enemy obj(pos, size, ResourceManager::GetTexture("car"), glm::vec2(0, 50), 200);
+    Enemy obj(pos, size, ResourceManager::GetTexture("car"), glm::vec2(0, 80), 200);
     this->Enemys.push_back(obj);
   }
 }
