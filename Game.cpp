@@ -33,10 +33,13 @@ GLfloat ShakeTime = 0.0f;
 // GLfloat Period = 1;
 GLboolean GunEnable;
 GLboolean Open;
+GLboolean knockback = GL_FALSE;
+GLboolean PlayerVisible = GL_FALSE;
 GLint Tick;
+glm::vec2 KnockbackVelocity(0.0f, 0.0f);
 
 Game::Game(GLuint width, GLuint height)
-      : State(GAME_ACTIVE), Keys(), Width(width), Height(height), Level(0), Lives(3), Velocity(0), Time(0), PeriodBullet(1), PeriodBulletEnemy(1), PeriodOpen(1), WidthLeft(width), HeightUp(height), WidthRight(width), HeightDown(height)
+      : State(GAME_ACTIVE), Keys(), Width(width), Height(height), Level(0), Lives(3), Velocity(0), Time(0), PeriodBullet(1), PeriodBulletEnemy(1), PeriodOpen(1), PeriodInvincible(1), WidthLeft(width), HeightUp(height), WidthRight(width), HeightDown(height)
 {
 
 }
@@ -73,6 +76,13 @@ void Game::Init()
   ResourceManager::LoadTexture("Images/Car3.png", GL_TRUE, "car3");
   ResourceManager::LoadTexture("Images/Car4.png", GL_TRUE, "car4");
   ResourceManager::LoadTexture("Images/Car5.png", GL_TRUE, "car5");
+  ResourceManager::LoadTexture("Images/RedCar.png", GL_TRUE, "redcar");
+  ResourceManager::LoadTexture("Images/RedCar1.png", GL_TRUE, "redcar1");
+  ResourceManager::LoadTexture("Images/RedCar2.png", GL_TRUE, "redcar2");
+  ResourceManager::LoadTexture("Images/RedCar3.png", GL_TRUE, "redcar3");
+  ResourceManager::LoadTexture("Images/RedCar4.png", GL_TRUE, "redcar4");
+  ResourceManager::LoadTexture("Images/RedCar5.png", GL_TRUE, "redcar5");
+
   // ResourceManager::LoadTexture("block_solid.png", GL_FALSE, "block_solid");
   // ResourceManager::LoadTexture("paddle.png", true, "paddle");
   // ResourceManager::LoadTexture("particle.png", GL_TRUE, "particlet");
@@ -136,6 +146,7 @@ void Game::Init()
   this->PeriodBullet = this->Time + 1;
   this->PeriodBulletEnemy = this->Time+1;
   this->PeriodOpen = this->Time + 1;
+  this->PeriodInvincible = this->Time + 1;
   // myTexture = ResourceManager::GetTexture("car2");
   // Player->Sprite = myTexture;
 }
@@ -151,17 +162,6 @@ void Game::Update(GLfloat dt)
   // Particles->Update(dt, *Ball, 2, glm::vec2(Ball->Radius / 2));
   for (GLuint i = 0; i < this->Levels[this->Level].NumberWaves; ++i)
   {
-    if (i > 0)
-      if (this->Levels[this->Level].TimeSpawn[i] == this->Levels[this->Level].TimeSpawn[i - 1])
-      {
-        dtBuf = dtBuf * 2;
-        lines++;
-      }
-      else
-      {
-        dtBuf = dt;
-        lines = 1;
-      }
     if (this->Time >= this->Levels[this->Level].TimeSpawn[i] && this->Time < this->Levels[this->Level].TimeSpawn[i] + dtBuf)
       this->Levels[this->Level].SpawnEnemys(i, lines);
   }
@@ -211,8 +211,11 @@ void Game::ProcessInput(GLfloat dt)
     {
       if (YellowDevilCar->Position.x >= this->WidthLeft)
       {
-        YellowDevilCar->Position.x -= velocityX;
-        GunEnable = GL_TRUE;
+        if (!YellowDevilCar->Knockback)
+          YellowDevilCar->Position.x -= velocityX;
+        else
+          YellowDevilCar->Position.x -= velocityX / 1.5 - KnockbackVelocity.x * dt;
+        // GunEnable = GL_TRUE;
       }
 
     }
@@ -220,8 +223,10 @@ void Game::ProcessInput(GLfloat dt)
     {
       if (YellowDevilCar->Position.x <= (this->WidthRight - YellowDevilCar->Size.x))
       {
-        YellowDevilCar->Position.x += velocityX;
-        GunEnable = GL_TRUE;
+        if (!YellowDevilCar->Knockback)
+          YellowDevilCar->Position.x += velocityX;
+        else
+          YellowDevilCar->Position.x += velocityX / 1.5 - KnockbackVelocity.x * dt;
       }
 
     }
@@ -229,14 +234,20 @@ void Game::ProcessInput(GLfloat dt)
     {
       if (YellowDevilCar->Position.y >= 0)
       {
-        YellowDevilCar->Position.y -= velocityY;
+        if (!YellowDevilCar->Knockback)
+          YellowDevilCar->Position.y -= velocityY;
+        else
+          YellowDevilCar->Position.y -= velocityY / 1.5 - KnockbackVelocity.y * dt;;
       }
     }
     if (this->Keys[GLFW_KEY_S])
     {
       if (YellowDevilCar->Position.y <= (this->Height - YellowDevilCar->Size.y))
       {
-        YellowDevilCar->Position.y += velocityY;
+        if (!YellowDevilCar->Knockback)
+          YellowDevilCar->Position.y += velocityY;
+        else
+          YellowDevilCar->Position.y += velocityY / 1.5 - KnockbackVelocity.y * dt;;
       }
     }
     if (this->Keys[GLFW_KEY_R]  && !this->KeysProcessed[GLFW_KEY_R])
@@ -309,7 +320,17 @@ void Game::Render(GLfloat dt)
     // myTexture = ResourceManager::GetTexture("car2");
     // Player->Sprite = myTexture;
 
-    YellowDevilCar->Draw(*Renderer);
+    if(!YellowDevilCar->Invincible)
+      YellowDevilCar->Draw(*Renderer);
+    if(this->Time / this->PeriodInvincible >= 1)
+    {
+      this->PeriodInvincible += 2 * dt;
+      PlayerVisible = GL_TRUE;
+    }
+    else
+        PlayerVisible = GL_FALSE;
+    if(YellowDevilCar->Invincible && PlayerVisible)
+      YellowDevilCar->Draw(*Renderer);  
     // for (PowerUp &powerUp : this->PowerUps)
     //   if (!powerUp.Destroyed)
     //     powerUp.Draw(*Renderer);
@@ -367,10 +388,36 @@ GLboolean isOtherPowerUpActive(std::vector<PowerUp> &powerUps, std::string type)
 
 void Game::UpdateEnemys(GLfloat dt)
 {
-  for(GLint i = 0; i < this->Levels[this->Level].Enemys.size(); ++i)
+  // for(GLint i = 0; i < this->Levels[this->Level].Enemys.size(); ++i)
+  // {
+  //   this->Levels[this->Level].Enemys[i].Position +=  this->Levels[this->Level].Enemys[i].Velocity * dt;
+  //   // this->Levels[this->Level].Enemys[i].Position +=  glm::vec2(0, 50) * dt;
+  // }
+  for (Enemy &enemy : this->Levels[this->Level].Enemys)
   {
-    this->Levels[this->Level].Enemys[i].Position +=  this->Levels[this->Level].Enemys[i].Velocity * dt;
-    // this->Levels[this->Level].Enemys[i].Position +=  glm::vec2(0, 50) * dt;
+    enemy.Position += enemy.Velocity * dt;
+    if(enemy.Knockback == GL_TRUE)
+    {
+      if (enemy.Position.x >= this->WidthLeft && enemy.Position.x <= (this->WidthRight - enemy.Size.x))
+        enemy.Position.x -= KnockbackVelocity.x * dt;
+      enemy.Position.y -= KnockbackVelocity.y * dt;
+      KnockbackVelocity.x -= KnockbackVelocity.x * 4 * dt;
+      KnockbackVelocity.y -= KnockbackVelocity.y * 4 * dt;
+      // std::cout << KnockbackVelocity.x << ' ' << KnockbackVelocity.y << std::endl;
+      // if (KnockbackVelocity.x <= 1 && KnockbackVelocity.x >= -1)
+      // {
+      //   KnockbackVelocity.x = 0;
+      // }
+      // if (KnockbackVelocity.y <= 1 && KnockbackVelocity.y >= -1)
+      // {
+      //   // enemy.Knockback = GL_FALSE;
+      //   KnockbackVelocity.y = 0;
+      // }
+      if (KnockbackVelocity.x == 0 && KnockbackVelocity.y ==0)
+      {
+        enemy.Knockback = GL_FALSE;
+      }
+    }
   }
 }
 
@@ -418,6 +465,33 @@ void Game::UpdatePlayer(GLfloat dt)
   {
     YellowDevilCar->Sprite = ResourceManager::GetTexture("car5");
     GunEnable = GL_TRUE;
+  }
+  if(YellowDevilCar->Knockback == GL_TRUE)
+  {
+
+    if (YellowDevilCar->Position.x >= this->WidthLeft && YellowDevilCar->Position.x <= (this->WidthRight - YellowDevilCar->Size.x))
+      YellowDevilCar->Position.x += KnockbackVelocity.x * dt;
+    if (YellowDevilCar->Position.y >= 0 && YellowDevilCar->Position.y <= (this->Height - YellowDevilCar->Size.y))
+      YellowDevilCar->Position.y += KnockbackVelocity.y * dt;
+    KnockbackVelocity.x -= KnockbackVelocity.x * 4 * dt;
+    KnockbackVelocity.y -= KnockbackVelocity.y * 4 * dt;
+    if (KnockbackVelocity.x <= 1 && KnockbackVelocity.x >= -1)
+    {
+      KnockbackVelocity.x = 0;
+    }
+    if (KnockbackVelocity.y <= 1 && KnockbackVelocity.y >= -1)
+    {
+      // YellowDevilCar->Knockback = GL_FALSE;
+      KnockbackVelocity.y = 0;
+    }
+    if (KnockbackVelocity.x == 0 && KnockbackVelocity.y == 0)
+    {
+      YellowDevilCar->Knockback = GL_FALSE;
+    }
+  }
+  if (this->Time >= YellowDevilCar->TimeInvincible)
+  {
+    YellowDevilCar->Invincible = GL_FALSE;
   }
 }
 
@@ -509,14 +583,13 @@ void Game::SpawnBullets(GLfloat dt)
       if (enemy.Position.y > YellowDevilCar->Position.y)
         velocity.y = -velocity.y;
 
-
       if (!enemy.Destroyed)
       this->Bullets.push_back
       (
         Bullet(glm::vec3(1.0f, 1.0f, 1.0f), bulPos, ResourceManager::GetTexture("enemyBullet"), velocity, GL_FALSE, GL_TRUE)
       );
     }
-      this->PeriodBulletEnemy += 50 * dt;
+      this->PeriodBulletEnemy += 100 * dt;
   }
 }
 
@@ -614,7 +687,7 @@ void Game::DoCollisions()
     }
     for (Bullet &bullet : this->Bullets)
     // Collision collision = CheckCollision(bullet, enemy);
-    if (CheckCollision(bullet, *YellowDevilCar) && bullet.Enemy)
+    if (CheckCollision(bullet, *YellowDevilCar) && bullet.Enemy && !YellowDevilCar->Invincible)
     {
       YellowDevilCar->HitPoints -= enemy.BulletDamage;
       ShakeTime = 0.1f;
@@ -626,7 +699,37 @@ void Game::DoCollisions()
         // Effects->Shake = GL_TRUE;
       }
       bullet.Destroyed = GL_TRUE;
+      YellowDevilCar->Invincible = GL_TRUE;
+      YellowDevilCar->TimeInvincible = this->Time + 1;
     }
+    if (!enemy.Destroyed)
+      if (CheckCollision(enemy, *YellowDevilCar) && !YellowDevilCar->Invincible)
+      {
+        YellowDevilCar->HitPoints -= enemy.BulletDamage * 2;
+        ShakeTime = 0.11f;
+        Effects->Shake = GL_TRUE;
+        enemy.HitPoints -= YellowDevilCar->BulletDamage * 2;
+        // glm::vec2 velocity(0.0f, 0.0f);
+        float x, y;
+        x = enemy.Position.x - YellowDevilCar->Position.x;
+        y = enemy.Position.y - YellowDevilCar->Position.y;
+        KnockbackVelocity.x = sqrt((enemy.BulletVelocity * enemy.BulletVelocity * x * x * 4) / (x * x + y * y));
+        KnockbackVelocity.y = abs(y / x * KnockbackVelocity.x);
+        if (enemy.Position.x > YellowDevilCar->Position.x)
+          KnockbackVelocity.x = -KnockbackVelocity.x;
+        if (enemy.Position.y > YellowDevilCar->Position.y)
+          KnockbackVelocity.y = -KnockbackVelocity.y;
+        enemy.Knockback = GL_TRUE;
+        YellowDevilCar->Knockback = GL_TRUE;
+
+        if (enemy.HitPoints <= 0)
+        {
+          enemy.Destroyed = GL_TRUE;
+          enemy.Knockback = GL_FALSE;
+        }
+        YellowDevilCar->Invincible = GL_TRUE;
+        YellowDevilCar->TimeInvincible = this->Time + 1;
+      }
   }
 
   for (PowerUp &powerUp : this->PowerUps)

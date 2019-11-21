@@ -50,6 +50,7 @@ public:
   GLfloat Time;
   GLfloat PeriodBullet;
   GLfloat PeriodBulletEnemy;
+  GLfloat PeriodInvincible;
   GLfloat PeriodOpen;
 
   Game(GLuint width, GLuint height);

@@ -122,7 +122,7 @@ void GameLevel::SpawnEnemys(GLint wave, GLint line)
     GLfloat posy = -100 -150*i;
     glm::vec2 pos(200 + 100 * this->Line[wave], posy);
     glm::vec2 size(50, 100);
-    Enemy obj(pos, size, ResourceManager::GetTexture("car"), glm::vec2(0, 80), 200);
+    Enemy obj(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 200);
     this->Enemys.push_back(obj);
   }
 }
