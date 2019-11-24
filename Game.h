@@ -10,6 +10,7 @@
 #include "BallObject.h"
 #include "YellowDevil.h"
 #include "Bullet.h"
+#include "Boom.h"
 
 enum GameState
 {
@@ -45,6 +46,7 @@ public:
   std::vector<GameLevel> Levels;
   std::vector<PowerUp> PowerUps;
   std::vector<Bullet> Bullets;
+  std::vector<Boom> Booms;
   GLuint Level;
   GLfloat Velocity;
   GLfloat Time;
@@ -52,6 +54,7 @@ public:
   GLfloat PeriodBulletEnemy;
   GLfloat PeriodInvincible;
   GLfloat PeriodOpen;
+  GLfloat PeriodBoom;
 
   Game(GLuint width, GLuint height);
   ~Game();
@@ -62,15 +65,16 @@ public:
   void Update(GLfloat dt);
   void Render (GLfloat dt);
   // GLboolean CheckCollision(GameObject &one, GameObject &two);
-  void DoCollisions();
+  void DoCollisions(GLfloat dt);
   void ResetLevel();
   void ResetPlayer();
   void SpawnPowerUps(GameObject &block);
   void UpdatePowerUps(GLfloat dt);
   void SpawnBullets(GLfloat dt);
   void UpdateBullets(GLfloat dt);
-  void UpdatePlayer(GLfloat dt);
   void UpdateEnemys(GLfloat dt);
+  void SpawnBooms(GameObject &enemy, GLfloat dt);
+  void UpdateBooms(GLfloat dt);
 
   GLuint Lives;
   GLboolean KeysProcessed[1024];

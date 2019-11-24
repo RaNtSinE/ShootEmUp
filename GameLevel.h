@@ -17,7 +17,7 @@ public:
   std::vector<GLint> TypeEnemy;
   std::vector<GLint> NumberEnemy;
   GLint NumberWaves;
-  std::vector<Enemy> Enemys;
+  std::vector<Enemy*> Enemys;
   Enemy Boss;
   GameLevel() { }
 

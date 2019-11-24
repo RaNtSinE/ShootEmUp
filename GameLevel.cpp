@@ -1,5 +1,16 @@
 #include "GameLevel.h"
-
+#include "EnemyA.h"
+#include "EnemyB.h"
+#include "EnemyC.h"
+#include "EnemyD.h"
+#include "EnemyE.h"
+#include "EnemyF.h"
+#include "EnemyG.h"
+#include "EnemyH.h"
+#include "EnemyI.h"
+#include "EnemyJ.h"
+#include "EnemyK.h"
+#include "EnemyL.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -32,17 +43,17 @@ void GameLevel::Load(const GLchar *file)
 void GameLevel::Draw(SpriteRenderer &renderer)
 {
   // for (GameObject &tile : this->Bricks)
-  //   if (!tile.Destroyed)
-  //     tile.Draw(renderer);
-  for (Enemy &tile : this->Enemys)
-    if (!tile.Destroyed)
-      tile.Draw(renderer);
+  //   if (!tile->Destroyed)
+  //     tile->Draw(renderer);
+  for (Enemy *tile : this->Enemys)
+    if (!tile->Destroyed)
+      tile->Draw(renderer);
 }
 
 GLboolean GameLevel::IsCompleted()
 {
   // for (GameObject &tile : this->Bricks)
-  //   if(!tile.IsSolid && !tile.Destroyed)
+  //   if(!tile->IsSolid && !tile->Destroyed)
   //     return GL_FALSE;
   // return GL_TRUE;
   if (!this->Boss.Destroyed)
@@ -120,9 +131,77 @@ void GameLevel::SpawnEnemys(GLint wave, GLint line)
   for (GLint i = 0; i < this->NumberEnemy[wave]; ++i)
   {
     GLfloat posy = -100 -150*i;
-    glm::vec2 pos(200 + 100 * this->Line[wave], posy);
+    glm::vec2 pos(210 + 130 * this->Line[wave], posy);
     glm::vec2 size(50, 100);
-    Enemy obj(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 200);
-    this->Enemys.push_back(obj);
+    // switch (this->TypeEnemy[wave]) {
+    //   case 1:
+    //     EnemyA* obj= new EnemyA(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 200, this->TypeEnemy[wave]);
+    //     this->Enemys.push_back(obj);
+    //     break;
+    //   default:
+    //     Enemy* obj = new Enemy(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 200, this->TypeEnemy[wave]);
+    //     this->Enemys.push_back(obj);
+    //     break;
+    // }
+    if (this->TypeEnemy[wave] == 1)
+    {
+        EnemyA* obj= new EnemyA(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 200, this->TypeEnemy[wave]);
+        this->Enemys.push_back(obj);
+    }
+    if (this->TypeEnemy[wave] == 2)
+    {
+      EnemyB* obj= new EnemyB(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 150, this->TypeEnemy[wave]);
+      this->Enemys.push_back(obj);
+    }
+    if (this->TypeEnemy[wave] == 3)
+    {
+      EnemyC* obj= new EnemyC(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 150, this->TypeEnemy[wave]);
+      this->Enemys.push_back(obj);
+    }
+    if (this->TypeEnemy[wave] == 4)
+    {
+      EnemyD* obj= new EnemyD(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 100, this->TypeEnemy[wave]);
+      this->Enemys.push_back(obj);
+    }
+    if (this->TypeEnemy[wave] == 5)
+    {
+      EnemyE* obj= new EnemyE(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 200, this->TypeEnemy[wave]);
+      this->Enemys.push_back(obj);
+    }
+    if (this->TypeEnemy[wave] == 6)
+    {
+      EnemyF* obj= new EnemyF(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 150, this->TypeEnemy[wave]);
+      this->Enemys.push_back(obj);
+    }
+    if (this->TypeEnemy[wave] == 7)
+    {
+      EnemyG* obj= new EnemyG(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 150, this->TypeEnemy[wave]);
+      this->Enemys.push_back(obj);
+    }
+    if (this->TypeEnemy[wave] == 8)
+    {
+      EnemyH* obj= new EnemyH(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 100, this->TypeEnemy[wave]);
+      this->Enemys.push_back(obj);
+    }
+    if (this->TypeEnemy[wave] == 9)
+    {
+      EnemyI* obj= new EnemyI(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 100, this->TypeEnemy[wave]);
+      this->Enemys.push_back(obj);
+    }
+    if (this->TypeEnemy[wave] == 10)
+    {
+      EnemyJ* obj= new EnemyJ(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 100, this->TypeEnemy[wave]);
+      this->Enemys.push_back(obj);
+    }
+    if (this->TypeEnemy[wave] == 11)
+    {
+      EnemyK* obj= new EnemyK(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 100, this->TypeEnemy[wave]);
+      this->Enemys.push_back(obj);
+    }
+    if (this->TypeEnemy[wave] == 12)
+    {
+      EnemyL* obj= new EnemyL(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 700, this->TypeEnemy[wave]);
+      this->Enemys.push_back(obj);
+    }
   }
 }
