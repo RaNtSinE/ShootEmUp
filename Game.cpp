@@ -10,7 +10,6 @@ using namespace irrklang;
 #include "Resource_manager.h"
 #include "SpriteRenderer.h"
 #include "GameObject.h"
-#include "BallObject.h"
 #include "ParticleGenerator.h"
 #include "PostProcessor.h"
 #include "TextRenderer.h"
@@ -56,9 +55,9 @@ Game::~Game()
 
 void Game::Init()
 {
-  ResourceManager::LoadShader("VertexShader.glsl", "FragmentShader.glsl", nullptr, "sprite");
-  ResourceManager::LoadShader("ParticleVertexShader.glsl", "ParticleFragmentShader.glsl", nullptr, "particles");
-  ResourceManager::LoadShader("PostVertexShader.glsl", "PostFragmentShader.glsl", nullptr, "postprocessing");
+  ResourceManager::LoadShader("Shaders/VertexShader.glsl", "Shaders/FragmentShader.glsl", nullptr, "sprite");
+  ResourceManager::LoadShader("Shaders/ParticleVertexShader.glsl", "Shaders/ParticleFragmentShader.glsl", nullptr, "particles");
+  ResourceManager::LoadShader("Shaders/PostVertexShader.glsl", "Shaders/PostFragmentShader.glsl", nullptr, "postprocessing");
   glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(this->Width), static_cast<GLfloat>(this->Height), 0.0f, -1.0f, 1.0f);
 
   ResourceManager::GetShader("sprite").Use().SetInteger("sprite", 0);
@@ -86,6 +85,7 @@ void Game::Init()
   ResourceManager::LoadTexture("Images/Boom2.png", GL_TRUE, "boom2");
   ResourceManager::LoadTexture("Images/Boom3.png", GL_TRUE, "boom3");
   ResourceManager::LoadTexture("Images/Boom4.png", GL_TRUE, "boom4");
+  ResourceManager::LoadTexture("Images/Wheel.png", GL_TRUE, "wheel");
 
   Shader myShader;
 
@@ -127,8 +127,8 @@ void Game::Init()
   this->WidthRight = this->WidthRight * 0.7657;
   this->WidthLeft = this->WidthLeft / 3.763;
 
-  GunEnable = GL_TRUE;
-  Open = GL_FALSE;
+  // GunEnable = GL_TRUE;
+  // Open = GL_FALSE;
   this->Time = 0;
   Tick = 0;
   this->PeriodBullet = this->Time + 1;
@@ -136,6 +136,9 @@ void Game::Init()
   this->PeriodOpen = this->Time + 1;
   this->PeriodInvincible = this->Time + 1;
   this->PeriodBoom = this->Time + 1;
+  // myTexture = ResourceManager::GetTexture("wheel");
+  YellowDevilCar->SetWheelTexture();
+  // YellowDevilCar->Wheel_2.SetTexture(myTexture);
 }
 
 void Game::Update(GLfloat dt)
@@ -145,9 +148,9 @@ void Game::Update(GLfloat dt)
   GLint lines = 1;
   this->DoCollisions(dt);
   // Particles->Update(dt, *Ball, 2, glm::vec2(Ball->Radius / 2));
-  for (GLuint i = 0; i < this->Levels[this->Level].NumberWaves; ++i)
+  for (GLuint i = 0; i < this->Levels[this->Level].GetNumberWaves(); ++i)
   {
-    if (this->Time >= this->Levels[this->Level].TimeSpawn[i] && this->Time < this->Levels[this->Level].TimeSpawn[i] + dtBuf)
+    if (this->Time >= this->Levels[this->Level].GetTimeSpawn(i) && this->Time < this->Levels[this->Level].GetTimeSpawn(i) + dtBuf)
       this->Levels[this->Level].SpawnEnemys(i, lines);
   }
   YellowDevilCar->UpdatePlayer(dt, this->WidthLeft, this->WidthRight, this->Height, this->Time);
@@ -160,7 +163,7 @@ void Game::Update(GLfloat dt)
   {
     ShakeTime -= dt;
     if (ShakeTime <= 0.0f)
-      Effects->Shake = GL_FALSE;
+      Effects->SetShake(GL_FALSE);
   }
   // if (Ball->Position.y >= this->Height)
   // {
@@ -190,64 +193,79 @@ void Game::ProcessInput(GLfloat dt)
 
     if (this->Keys[GLFW_KEY_A])
     {
-      if (YellowDevilCar->Position.x >= this->WidthLeft)
+      if (YellowDevilCar->GetPositionX() >= this->WidthLeft)
       {
-        if (!YellowDevilCar->Knockback)
-          YellowDevilCar->Position.x -= velocityX;
+        YellowDevilCar->SetRotateLeft(GL_TRUE);
+        if (!YellowDevilCar->GetKnockback())
+          YellowDevilCar->MoveLeft(velocityX);
         else
-          YellowDevilCar->Position.x -= velocityX / 1.5 - YellowDevilCar->KnockbackVelocity.x * dt;
+          YellowDevilCar->UpdatePositionX(-1 * (velocityX / 1.5 - YellowDevilCar->GetKnockbackVelocityX() * dt));
       }
-
+    }
+    else
+    {
+      YellowDevilCar->SetRotateLeft(GL_FALSE);
     }
     if (this->Keys[GLFW_KEY_D])
     {
-      if (YellowDevilCar->Position.x <= (this->WidthRight - YellowDevilCar->Size.x))
+      if (YellowDevilCar->GetPositionX() <= (this->WidthRight - YellowDevilCar->GetSizeX()))
       {
-        if (!YellowDevilCar->Knockback)
-          YellowDevilCar->Position.x += velocityX;
+        YellowDevilCar->SetRotateRight(GL_TRUE);
+        if (!YellowDevilCar->GetKnockback())
+          YellowDevilCar->MoveRight(velocityX);
         else
-          YellowDevilCar->Position.x += velocityX / 1.5 - YellowDevilCar->KnockbackVelocity.x * dt;
+          YellowDevilCar->UpdatePositionX(velocityX / 1.5 - YellowDevilCar->GetKnockbackVelocityX() * dt);
       }
-
+    }
+    else
+    {
+      YellowDevilCar->SetRotateRight(GL_FALSE);
     }
     if (this->Keys[GLFW_KEY_W])
     {
-      if (YellowDevilCar->Position.y >= 0)
+      if (YellowDevilCar->GetPositionY() >= 0)
       {
-        if (!YellowDevilCar->Knockback)
-          YellowDevilCar->Position.y -= velocityY;
+        if (!YellowDevilCar->GetKnockback())
+          // YellowDevilCar->Position.y -= velocityY;
+          YellowDevilCar->MoveForward(velocityY);
         else
-          YellowDevilCar->Position.y -= velocityY / 1.5 - YellowDevilCar->KnockbackVelocity.y * dt;;
+          YellowDevilCar->UpdatePositionY(-1 * (velocityY / 1.5 - YellowDevilCar->GetKnockbackVelocityY() * dt));
       }
     }
     if (this->Keys[GLFW_KEY_S])
     {
-      if (YellowDevilCar->Position.y <= (this->Height - YellowDevilCar->Size.y))
+      if (YellowDevilCar->GetPositionY() <= (this->Height - YellowDevilCar->GetSizeY()))
       {
-        if (!YellowDevilCar->Knockback)
-          YellowDevilCar->Position.y += velocityY;
+        if (!YellowDevilCar->GetKnockback())
+          // YellowDevilCar->Position.y += velocityY;
+          YellowDevilCar->MoveBack(velocityY);
         else
-          YellowDevilCar->Position.y += velocityY / 1.5 - YellowDevilCar->KnockbackVelocity.y * dt;;
+          YellowDevilCar->UpdatePositionY(velocityY / 1.5 - YellowDevilCar->GetKnockbackVelocityY() * dt);
       }
     }
     if (this->Keys[GLFW_KEY_R]  && !this->KeysProcessed[GLFW_KEY_R])
     {
-      if (YellowDevilCar->Open == GL_FALSE)
+      if (!YellowDevilCar->GetOpen())
       {
         // Open = GL_TRUE;
-        YellowDevilCar->Open = GL_TRUE;
+        if (!YellowDevilCar->GetStartOpen())
+        {
+          YellowDevilCar->SetPeriodOpen(this->Time);
+          YellowDevilCar->SetStartOpen(GL_TRUE);
+        }
+        YellowDevilCar->SetOpen(GL_TRUE);
         this->KeysProcessed[GLFW_KEY_R] = GL_TRUE;
       }
       else
       {
         // Open = GL_FALSE;
-        YellowDevilCar->Open = GL_FALSE;
+        YellowDevilCar->SetOpen(GL_FALSE);
         this->KeysProcessed[GLFW_KEY_R] = GL_TRUE;
       }
     }
     if (this->Keys[GLFW_KEY_SPACE])
       // Ball->Stuck = false;
-      YellowDevilCar->Destroyed = GL_TRUE;
+      YellowDevilCar->SetDestroyed(GL_TRUE);
   }
   if (this->State == GAME_MENU)
   {
@@ -289,7 +307,7 @@ void Game::Render(GLfloat dt)
     Effects->BeginRender();
     Texture2D myTexture;
     myTexture = ResourceManager::GetTexture("background");
-    this->Velocity += dt * 600;
+    this->Velocity += dt * 1000;
     GLfloat upStep = -1*this->Height;
     if (this->Velocity > this->Height)
       this->Velocity = 0;
@@ -299,9 +317,12 @@ void Game::Render(GLfloat dt)
         glm::vec2(0, 0 + this->Velocity), glm::vec2(this->Width, this->Height), 0.0f);
 
     this->Levels[this->Level].Draw(*Renderer);
-
-    if(!YellowDevilCar->Invincible)
+    if(!YellowDevilCar->GetInvincible())
+    {
+      YellowDevilCar->DrawWheel_1(*Renderer);
+      YellowDevilCar->DrawWheel_2(*Renderer);
       YellowDevilCar->Draw(*Renderer);
+    }
     if(this->Time / this->PeriodInvincible >= 1)
     {
       this->PeriodInvincible += 2 * dt;
@@ -309,20 +330,25 @@ void Game::Render(GLfloat dt)
     }
     else
         PlayerVisible = GL_FALSE;
-    if(YellowDevilCar->Invincible && PlayerVisible)
+    if(YellowDevilCar->GetInvincible() && PlayerVisible)
+    {
+      YellowDevilCar->DrawWheel_1(*Renderer);
+      YellowDevilCar->DrawWheel_2(*Renderer);
       YellowDevilCar->Draw(*Renderer);
+    }
     // for (PowerUp &powerUp : this->PowerUps)
     //   if (!powerUp.Destroyed)
     //     powerUp.Draw(*Renderer);
     for (Bullet &bullet : this->Bullets)
-      if (!bullet.Destroyed)
+      if (!bullet.GetDestroyed())
         bullet.Draw(*Renderer);
     for (Boom &boom : this->Booms)
-      if (!boom.Destroyed)
+      if (!boom.GetDestroyed())
         boom.Draw(*Renderer);
     // Particles->Draw();
     Effects->EndRender();
     Effects->Render(glfwGetTime());
+
     // std::stringstream ss; ss << this->Lives;
     // Text->RenderText("Lives:" + ss.str(), 5.0f, 5.0f, 1.0f);
   }
@@ -352,10 +378,10 @@ void Game::ResetLevel()
 
 void Game::ResetPlayer()
 {
-  YellowDevilCar->Size = PLAYER_SIZE;
-  YellowDevilCar->Position = glm::vec2(this->Width / 2 - PLAYER_SIZE.x / 2, this->Height - PLAYER_SIZE.y);
-  Effects->Chaos = Effects->Confuse = GL_FALSE;
-  YellowDevilCar->Color = glm::vec3(1.0f);
+  // YellowDevilCar->Size = PLAYER_SIZE;
+  // YellowDevilCar->Position = glm::vec2(this->Width / 2 - PLAYER_SIZE.x / 2, this->Height - PLAYER_SIZE.y);
+  Effects->SetChaos(GL_FALSE); Effects->SetConfuse(GL_FALSE);
+  YellowDevilCar->SetColor(glm::vec3(1.0f));
 }
 
 GLboolean CheckCollision(GameObject &one, GameObject &two);
@@ -366,13 +392,13 @@ GLboolean isOtherPowerUpActive(std::vector<PowerUp> &powerUps, std::string type)
 
 void Game::UpdateEnemys(GLfloat dt)
 {
-  for (Enemy *enemy : this->Levels[this->Level].Enemys)
+  for (Enemy *enemy : this->Levels[this->Level].GetEnemys())
   {
-    if(enemy->Knockback == GL_TRUE)
+    if(enemy->GetKnockback())
     {
-      if (enemy->Position.x >= this->WidthLeft && enemy->Position.x <= (this->WidthRight - enemy->Size.x))
-        enemy->Position.x -= KnockbackVelocity.x * dt;
-      enemy->Position.y -= KnockbackVelocity.y * dt;
+      if (enemy->GetPositionX() >= this->WidthLeft && enemy->GetPositionX() <= (this->WidthRight - enemy->GetSizeX()))
+        enemy->UpdatePositionX(-KnockbackVelocity.x * dt);
+      enemy->UpdatePositionY(-KnockbackVelocity.y * dt);
       KnockbackVelocity.x -= KnockbackVelocity.x * 4 * dt;
       KnockbackVelocity.y -= KnockbackVelocity.y * 4 * dt;
       if (KnockbackVelocity.x <= 1 && KnockbackVelocity.x >= -1)
@@ -386,7 +412,7 @@ void Game::UpdateEnemys(GLfloat dt)
       }
       if (KnockbackVelocity.x == 0 && KnockbackVelocity.y ==0)
       {
-        enemy->Knockback = GL_FALSE;
+        enemy->SetKnockback(GL_FALSE);
       }
     }
     enemy->UpdateEnemy(dt, this->WidthLeft, this->WidthRight, this->Width, this->Height, this->Time);
@@ -397,11 +423,11 @@ void Game::UpdateBullets(GLfloat dt)
 {
   for (Bullet &bullet : this->Bullets)
   {
-    bullet.Position += bullet.Velocity * dt;
+    bullet.UpdatePosition(bullet.GetVelocity() * dt);
     // bullet.Position.y -= 100 * dt;
   }
   this->Bullets.erase(std::remove_if(this->Bullets.begin(), this->Bullets.end(), [](const Bullet &bullet)
-  { return bullet.Destroyed; }), this->Bullets.end());
+  { return bullet.GetDestroyed(); }), this->Bullets.end());
 }
 
 void Game::UpdateBooms(GLfloat dt)
@@ -417,53 +443,53 @@ void Game::UpdateBooms(GLfloat dt)
   {
     // boom.Position += boom.Velocity * dt;
     // bullet.Position.y -= 100 * dt;
-      if(boom.Tick < 5 && Explore == GL_TRUE)
-        boom.Tick++;
-    if(boom.Tick == 0)
+      if(boom.GetTick() < 5 && Explore == GL_TRUE)
+        boom.UpdateBoom();
+    if(boom.GetTick() == 0)
     {
-      boom.Sprite = ResourceManager::GetTexture("boom1");
+      boom.SetTexture(ResourceManager::GetTexture("boom1"));
     }
-    if(boom.Tick == 1)
+    if(boom.GetTick() == 1)
     {
-      boom.Sprite = ResourceManager::GetTexture("boom2");
+      boom.SetTexture(ResourceManager::GetTexture("boom2"));
     }
-    if(boom.Tick == 2)
+    if(boom.GetTick() == 2)
     {
-      boom.Sprite = ResourceManager::GetTexture("boom3");
+      boom.SetTexture(ResourceManager::GetTexture("boom3"));
     }
-    if(boom.Tick == 3)
+    if(boom.GetTick() == 3)
     {
-      boom.Sprite = ResourceManager::GetTexture("boom4");
+      boom.SetTexture(ResourceManager::GetTexture("boom4"));
     }
-    if(boom.Tick == 4)
+    if(boom.GetTick() == 4)
     {
-      boom.Destroyed = GL_TRUE;
+      boom.SetDestroyed(GL_TRUE);
     }
   }
   this->Booms.erase(std::remove_if(this->Booms.begin(), this->Booms.end(), [](const Boom &boom)
-  { return boom.Destroyed; }), this->Booms.end());
+  { return boom.GetDestroyed(); }), this->Booms.end());
 }
 void Game::UpdatePowerUps(GLfloat dt)
 {
   for (PowerUp &powerUp : this->PowerUps)
   {
-    powerUp.Position += powerUp.Velocity * dt;
-    if (powerUp.Activated)
+    powerUp.UpdatePosition(powerUp.GetVelocity() * dt);
+    if (powerUp.GetActivated())
     {
-      powerUp.Duration -= dt;
-      if (powerUp.Duration <= 0.0f)
+      powerUp.UpdateDuration(dt);
+      if (powerUp.GetDuration() <= 0.0f)
       {
-        powerUp.Activated = GL_FALSE;
+        powerUp.SetActivated(GL_FALSE);
 
-        if (powerUp.Type == "sticky")
+        if (powerUp.GetType() == "sticky")
         {
           if (!isOtherPowerUpActive(this->PowerUps, "sticky"))
           {
             // Ball->Sticky = GL_FALSE;
-            YellowDevilCar->Color = glm::vec3(1.0f);
+            YellowDevilCar->SetColor(glm::vec3(1.0f));
           }
         }
-        else if (powerUp.Type == "pass-through")
+        else if (powerUp.GetType() == "pass-through")
         {
           if (!isOtherPowerUpActive(this->PowerUps, "pass-through"))
           {
@@ -471,128 +497,130 @@ void Game::UpdatePowerUps(GLfloat dt)
             // Ball->Color = glm::vec3(1.0f);
           }
         }
-        else if (powerUp.Type == "confuse")
+        else if (powerUp.GetType() == "confuse")
         {
           if (!isOtherPowerUpActive(this->PowerUps, "confuse"))
           {
-            Effects->Confuse = GL_FALSE;
+            Effects->SetConfuse(GL_FALSE);
           }
         }
-        else if (powerUp.Type == "chaos")
+        else if (powerUp.GetType() == "chaos")
         {
           if (!isOtherPowerUpActive(this->PowerUps, "chaos"))
           {
-            Effects->Chaos = GL_FALSE;
+            Effects->SetChaos(GL_FALSE);
           }
         }
       }
     }
   }
   this->PowerUps.erase(std::remove_if(this->PowerUps.begin(), this->PowerUps.end(), [](const PowerUp &powerUp)
-  { return powerUp.Destroyed && !powerUp.Activated; }), this->PowerUps.end());
+  { return powerUp.GetDestroyed() && !powerUp.GetActivated(); }), this->PowerUps.end());
 }
 
 void Game::SpawnBullets(GLfloat dt)
 {
-  glm::vec2 bulPos(YellowDevilCar->Position.x + PLAYER_SIZE.x / 2 - BULLET_SIZE / 2, YellowDevilCar->Position.y);
-  if (this->Time / this->PeriodBullet >= 1 )
+  glm::vec2 bulPos(YellowDevilCar->GetPositionX() + PLAYER_SIZE.x / 2 - BULLET_SIZE / 2, YellowDevilCar->GetPositionY());
+  if (this->Time / YellowDevilCar->GetPeriodBullet() >= 1 )
   {
-    this->PeriodBullet += 20 * dt;
-    if (YellowDevilCar->GunEnable)
+    YellowDevilCar->UpdatePeriodBullet(20 * dt);
+    if (YellowDevilCar->GetGunEnable())
     this->Bullets.push_back
     (
-      Bullet(glm::vec3(1.0f, 1.0f, 1.0f), bulPos, ResourceManager::GetTexture("bullet"), YellowDevilCar->BulletVelocity, GL_TRUE, GL_FALSE)
+      Bullet(glm::vec3(1.0f, 1.0f, 1.0f), bulPos, ResourceManager::GetTexture("bullet"), YellowDevilCar->GetBulletVelocity(), GL_TRUE, GL_FALSE)
     );
   }
-  if (this->Time / this->PeriodBulletEnemy >= 1 )
-  {
-    for (Enemy *enemy : this->Levels[this->Level].Enemys)
+  // if (this->Time / this->PeriodBulletEnemy >= 1 )
+  // {
+    for (Enemy *enemy : this->Levels[this->Level].GetEnemys())
     {
-      bulPos = glm::vec2(enemy->Position.x + enemy->Size.x / 2 - BULLET_SIZE, enemy->Position.y + enemy->Size.y / 1.5);
-      glm::vec2 velocity(0.0f, 0.0f);
-      float x, y;
-      x = enemy->Position.x - YellowDevilCar->Position.x;
-      y = enemy->Position.y - YellowDevilCar->Position.y;
-      velocity.x = sqrt((enemy->BulletVelocity * enemy->BulletVelocity * x * x) / (x * x + y * y));
-      velocity.y = abs(y / x * velocity.x);
-      if (enemy->Position.x > YellowDevilCar->Position.x)
-        velocity.x = -velocity.x;
-      if (enemy->Position.y > YellowDevilCar->Position.y)
-        velocity.y = -velocity.y;
+      // bulPos = glm::vec2(enemy->Position.x + enemy->Size.x / 2 - BULLET_SIZE, enemy->Position.y + enemy->Size.y / 1.5);
+      // glm::vec2 velocity(0.0f, 0.0f);
+      // float x, y;
+      // x = enemy->Position.x - YellowDevilCar->Position.x;
+      // y = enemy->Position.y - YellowDevilCar->Position.y;
+      // velocity.x = sqrt((enemy->BulletVelocity * enemy->BulletVelocity * x * x) / (x * x + y * y));
+      // velocity.y = abs(y / x * velocity.x);
+      // if (enemy->Position.x > YellowDevilCar->Position.x)
+      //   velocity.x = -velocity.x;
+      // if (enemy->Position.y > YellowDevilCar->Position.y)
+      //   velocity.y = -velocity.y;
+      //
+      // if (!enemy->Destroyed)
+      // this->Bullets.push_back
+      // (
+      //   Bullet(glm::vec3(1.0f, 1.0f, 1.0f), bulPos, ResourceManager::GetTexture("enemyBullet"), velocity, GL_FALSE, GL_TRUE)
+      // );
 
-      if (!enemy->Destroyed)
-      this->Bullets.push_back
-      (
-        Bullet(glm::vec3(1.0f, 1.0f, 1.0f), bulPos, ResourceManager::GetTexture("enemyBullet"), velocity, GL_FALSE, GL_TRUE)
-      );
+      enemy->SpawnBullets(this->Time, dt, YellowDevilCar->GetPositionX(), YellowDevilCar->GetPositionY(), &Bullets);
     }
-      this->PeriodBulletEnemy += 100 * dt;
-  }
+      // this->PeriodBulletEnemy += 100 * dt;
+
 }
 
 void Game::SpawnBooms(GameObject &enemy, GLfloat dt)
 {
-    glm::vec2 boomPos(enemy.Position.x - enemy.Size.x * 0.1, enemy.Position.y + enemy.Size.y * 0.3);
+    glm::vec2 boomPos(enemy.GetPositionX() - enemy.GetSizeX() * 0.1, enemy.GetPositionY() + enemy.GetSizeY() * 0.3);
     this->Booms.push_back
     (
-      Boom(boomPos, glm::vec2(enemy.Size.y * 0.8, enemy.Size.y * 0.8), ResourceManager::GetTexture("boom1"), glm::vec2(0.0f, 0.0f))
+      Boom(boomPos, glm::vec2(enemy.GetSizeY() * 0.8, enemy.GetSizeY() * 0.8), ResourceManager::GetTexture("boom1"), glm::vec2(0.0f, 0.0f))
     );
 }
 
 void Game::SpawnPowerUps(GameObject &block)
 {
-  if (ShouldSpawn(75))
-    this->PowerUps.push_back
-    (
-      PowerUp("speed", glm::vec3(0.5f, 0.5f, 1.0f), 0.0f, block.Position, ResourceManager::GetTexture("powerup_speed"))
-    );
-  if (ShouldSpawn(75))
-    this->PowerUps.push_back
-    (
-      PowerUp("sticky", glm::vec3(1.0f, 0.5f, 1.0f), 20.0f, block.Position, ResourceManager::GetTexture("powerup_sticky"))
-    );
-  if (ShouldSpawn(75))
-    this->PowerUps.push_back
-    (
-      PowerUp("pass-through", glm::vec3(0.5f, 1.0f, 0.5f), 10.0f, block.Position, ResourceManager::GetTexture("powerup_passthrough"))
-    );
-  if (ShouldSpawn(75))
-    this->PowerUps.push_back
-    (
-      PowerUp("pad-size-increase", glm::vec3(1.0f, 0.6f, 0.4f), 0.0f, block.Position, ResourceManager::GetTexture("powerup_increase"))
-    );
-  if (ShouldSpawn(15))
-    this->PowerUps.push_back
-    (
-      PowerUp("confuse", glm::vec3(1.0f, 0.3f, 0.3f), 15.0f, block.Position, ResourceManager::GetTexture("powerup_confuse"))
-    );
-  if (ShouldSpawn(75))
-    this->PowerUps.push_back
-    (
-      PowerUp("chaos", glm::vec3(0.9f, 0.25f, 0.25f), 15.0f, block.Position, ResourceManager::GetTexture("powerup_chaos"))
-    );
+  // if (ShouldSpawn(75))
+  //   this->PowerUps.push_back
+  //   (
+  //     PowerUp("speed", glm::vec3(0.5f, 0.5f, 1.0f), 0.0f, block.Position, ResourceManager::GetTexture("powerup_speed"))
+  //   );
+  // if (ShouldSpawn(75))
+  //   this->PowerUps.push_back
+  //   (
+  //     PowerUp("sticky", glm::vec3(1.0f, 0.5f, 1.0f), 20.0f, block.Position, ResourceManager::GetTexture("powerup_sticky"))
+  //   );
+  // if (ShouldSpawn(75))
+  //   this->PowerUps.push_back
+  //   (
+  //     PowerUp("pass-through", glm::vec3(0.5f, 1.0f, 0.5f), 10.0f, block.Position, ResourceManager::GetTexture("powerup_passthrough"))
+  //   );
+  // if (ShouldSpawn(75))
+  //   this->PowerUps.push_back
+  //   (
+  //     PowerUp("pad-size-increase", glm::vec3(1.0f, 0.6f, 0.4f), 0.0f, block.Position, ResourceManager::GetTexture("powerup_increase"))
+  //   );
+  // if (ShouldSpawn(15))
+  //   this->PowerUps.push_back
+  //   (
+  //     PowerUp("confuse", glm::vec3(1.0f, 0.3f, 0.3f), 15.0f, block.Position, ResourceManager::GetTexture("powerup_confuse"))
+  //   );
+  // if (ShouldSpawn(75))
+  //   this->PowerUps.push_back
+  //   (
+  //     PowerUp("chaos", glm::vec3(0.9f, 0.25f, 0.25f), 15.0f, block.Position, ResourceManager::GetTexture("powerup_chaos"))
+  //   );
 }
 
 void Game::DoCollisions(GLfloat dt)
 {
-  for (Enemy *enemy : this->Levels[this->Level].Enemys)
+  for (Enemy *enemy : this->Levels[this->Level].GetEnemys())
   {
-    if (!enemy->Destroyed)
+    if (!enemy->GetDestroyed())
     {
       for (Bullet &bullet : this->Bullets)
       // Collision collision = CheckCollision(bullet, enemy);
-      if (CheckCollision(bullet, *enemy) && bullet.Ally)
+      if (CheckCollision(bullet, *enemy) && bullet.GetAlly())
       {
-        enemy->HitPoints -= YellowDevilCar->BulletDamage;
-        enemy->Damage = GL_TRUE;
-        if (enemy->HitPoints <= 0)
+        enemy->UpdateHitPoints(YellowDevilCar->GetBulletDamage());
+        enemy->SetDamage(GL_TRUE);
+        if (enemy->GetHitPoints() <= 0)
         {
-          enemy->Destroyed = GL_TRUE;
+          enemy->SetDestroyed(GL_TRUE);
           this->SpawnBooms(*enemy, dt);
           // ShakeTime = 0.05f;
           // Effects->Shake = GL_TRUE;
         }
-        bullet.Destroyed = GL_TRUE;
+        bullet.SetDestroyed(GL_TRUE);
       }
     //   {
     //     // if (!box.IsSolid)
@@ -634,68 +662,69 @@ void Game::DoCollisions(GLfloat dt)
     }
     for (Bullet &bullet : this->Bullets)
     // Collision collision = CheckCollision(bullet, enemy);
-    if (CheckCollision(bullet, *YellowDevilCar) && bullet.Enemy && !YellowDevilCar->Invincible)
+    if (CheckCollision(bullet, *YellowDevilCar) && bullet.GetEnemy() && !YellowDevilCar->GetInvincible())
     {
-      YellowDevilCar->HitPoints -= enemy->BulletDamage;
+      YellowDevilCar->UpdateHitPoints(enemy->GetBulletDamage());
       ShakeTime = 0.1f;
-      Effects->Shake = GL_TRUE;
-      if (YellowDevilCar->HitPoints <= 0)
+      Effects->SetShake(GL_TRUE);
+      if (YellowDevilCar->GetHitPoints() <= 0)
       {
-        YellowDevilCar->Destroyed = GL_TRUE;
+        YellowDevilCar->SetDestroyed(GL_TRUE);
         // ShakeTime = 0.05f;
         // Effects->Shake = GL_TRUE;
       }
-      bullet.Destroyed = GL_TRUE;
-      YellowDevilCar->Invincible = GL_TRUE;
-      YellowDevilCar->TimeInvincible = this->Time + 1;
+      bullet.SetDestroyed(GL_TRUE);
+      YellowDevilCar->SetInvincible(GL_TRUE);
+      YellowDevilCar->SetTimeInvincible(this->Time + 1);
     }
-    if (!enemy->Destroyed)
-      if (CheckCollision(*enemy, *YellowDevilCar) && !YellowDevilCar->Invincible)
+    if (!enemy->GetDestroyed())
+      if (CheckCollision(*enemy, *YellowDevilCar) && !YellowDevilCar->GetInvincible())
       {
-        YellowDevilCar->HitPoints -= enemy->BulletDamage * 2;
+        YellowDevilCar->UpdateHitPoints(enemy->GetBulletDamage() * 2);
         ShakeTime = 0.11f;
-        Effects->Shake = GL_TRUE;
-        enemy->HitPoints -= YellowDevilCar->BulletDamage * 2;
+        Effects->SetShake(GL_TRUE);
+        enemy->UpdateHitPoints(YellowDevilCar->GetBulletDamage() * 2);
+        enemy->SetDamage(GL_TRUE);
         // glm::vec2 velocity(0.0f, 0.0f);
         float x, y;
-        x = enemy->Position.x - YellowDevilCar->Position.x;
-        y = enemy->Position.y - YellowDevilCar->Position.y;
-        KnockbackVelocity.x = sqrt((enemy->BulletVelocity * enemy->BulletVelocity * x * x * 4) / (x * x + y * y));
+        x = enemy->GetPositionX() - YellowDevilCar->GetPositionX();
+        y = enemy->GetPositionX() - YellowDevilCar->GetPositionY();
+        KnockbackVelocity.x = sqrt((enemy->GetBulletVelocity() * enemy->GetBulletVelocity() * x * x * 4) / (x * x + y * y));
         KnockbackVelocity.y = abs(y / x * KnockbackVelocity.x);
-        if (enemy->Position.x > YellowDevilCar->Position.x)
+        if (enemy->GetPositionX() > YellowDevilCar->GetPositionX())
           KnockbackVelocity.x = -KnockbackVelocity.x;
-        if (enemy->Position.y > YellowDevilCar->Position.y)
+        if (enemy->GetPositionY() > YellowDevilCar->GetPositionY())
           KnockbackVelocity.y = -KnockbackVelocity.y;
-        enemy->Knockback = GL_TRUE;
-        YellowDevilCar->Knockback = GL_TRUE;
-        YellowDevilCar->KnockbackVelocity = KnockbackVelocity;
+        enemy->SetKnockback(GL_TRUE);
+        YellowDevilCar->SetKnockback(GL_TRUE);
+        YellowDevilCar->SetKnockbackVelocity(KnockbackVelocity);
 
-        if (enemy->HitPoints <= 0)
+        if (enemy->GetHitPoints() <= 0)
         {
-          enemy->Destroyed = GL_TRUE;
-          enemy->Knockback = GL_FALSE;
+          enemy->SetDestroyed(GL_TRUE);
+          enemy->SetKnockback(GL_FALSE);
           this->SpawnBooms(*enemy, dt);
         }
-        if (YellowDevilCar->HitPoints <= 0)
+        if (YellowDevilCar->GetHitPoints() <= 0)
         {
-          YellowDevilCar->Destroyed = GL_TRUE;
+          YellowDevilCar->SetDestroyed(GL_TRUE);
         }
-        YellowDevilCar->Invincible = GL_TRUE;
-        YellowDevilCar->TimeInvincible = this->Time + 1;
+        YellowDevilCar->SetInvincible(GL_TRUE);
+        YellowDevilCar->SetTimeInvincible(this->Time + 1);
       }
   }
 
   for (PowerUp &powerUp : this->PowerUps)
   {
-    if (!powerUp.Destroyed)
+    if (!powerUp.GetDestroyed())
     {
-      if (powerUp.Position.y >= this->Height)
-        powerUp.Destroyed = GL_TRUE;
+      if (powerUp.GetPositionY() >= this->Height)
+        powerUp.SetDestroyed(GL_TRUE);
       if (CheckCollision(*YellowDevilCar, powerUp))
       {
         ActivatePowerUp(powerUp);
-        powerUp.Destroyed = GL_TRUE;
-        powerUp.Activated = GL_TRUE;
+        powerUp.SetDestroyed(GL_TRUE);
+        powerUp.SetActivated(GL_TRUE);
         SoundEngine->play2D("audio/powerup.wav", GL_FALSE);
       }
     }
@@ -703,10 +732,10 @@ void Game::DoCollisions(GLfloat dt)
 
   for (Bullet &bullet : this->Bullets)
   {
-    if (!bullet.Destroyed)
+    if (!bullet.GetDestroyed())
     {
-      if (bullet.Position.y >= this->Height || bullet.Position.y <= 0)
-        bullet.Destroyed = GL_TRUE;
+      if (bullet.GetPositionY() >= this->Height || bullet.GetPositionY() <= 0)
+        bullet.SetDestroyed(GL_TRUE);
       // if (CheckCollision(*Player, powerUp))
       // {
       //   ActivatePowerUp(powerUp);
@@ -737,11 +766,11 @@ void Game::DoCollisions(GLfloat dt)
 
 GLboolean CheckCollision(GameObject &one, GameObject &two)
 {
-  bool collisionX = one.Position.x + one.Size.x >= two.Position.x &&
-    two.Position.x + two.Size.x >= one.Position.x;
+  bool collisionX = one.GetPositionX() + one.GetSizeX() >= two.GetPositionX() &&
+    two.GetPositionX() + two.GetSizeX() >= one.GetPositionX();
 
-  bool collisionY = one.Position.y + one.Size.y >= two.Position.y &&
-    two.Position.y + two.Size.y >= one.Position.y;
+  bool collisionY = one.GetPositionY() + one.GetSizeY() >= two.GetPositionY() &&
+    two.GetPositionY() + two.GetSizeY() >= one.GetPositionY();
   return collisionX && collisionY;
 }
 // GLboolean CheckCollision(GameObject &one, GameObject &two)
@@ -838,8 +867,8 @@ GLboolean isOtherPowerUpActive(std::vector<PowerUp> &powerUps, std::string type)
 {
   for (const PowerUp &powerUp : powerUps)
   {
-    if (powerUp.Activated)
-      if (powerUp.Type == type)
+    if (powerUp.GetActivated())
+      if (powerUp.GetType() == type)
         return GL_TRUE;
   }
   return GL_FALSE;

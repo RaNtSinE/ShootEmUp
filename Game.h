@@ -7,7 +7,6 @@
 
 #include "GameLevel.h"
 #include "PowerUp.h"
-#include "BallObject.h"
 #include "YellowDevil.h"
 #include "Bullet.h"
 #include "Boom.h"
@@ -41,21 +40,6 @@ class Game
 public:
   GameState State;
   GLboolean Keys[1024];
-  GLuint    Width, Height;
-  GLfloat   WidthLeft, WidthRight, HeightUp, HeightDown;
-  std::vector<GameLevel> Levels;
-  std::vector<PowerUp> PowerUps;
-  std::vector<Bullet> Bullets;
-  std::vector<Boom> Booms;
-  GLuint Level;
-  GLfloat Velocity;
-  GLfloat Time;
-  GLfloat PeriodBullet;
-  GLfloat PeriodBulletEnemy;
-  GLfloat PeriodInvincible;
-  GLfloat PeriodOpen;
-  GLfloat PeriodBoom;
-
   Game(GLuint width, GLuint height);
   ~Game();
 
@@ -64,7 +48,6 @@ public:
   void ProcessInput(GLfloat dt);
   void Update(GLfloat dt);
   void Render (GLfloat dt);
-  // GLboolean CheckCollision(GameObject &one, GameObject &two);
   void DoCollisions(GLfloat dt);
   void ResetLevel();
   void ResetPlayer();
@@ -78,4 +61,19 @@ public:
 
   GLuint Lives;
   GLboolean KeysProcessed[1024];
+private:
+  GLuint Level;
+  GLfloat Velocity;
+  GLfloat Time;
+  GLfloat PeriodBullet;
+  GLfloat PeriodBulletEnemy;
+  GLfloat PeriodInvincible;
+  GLfloat PeriodOpen;
+  GLfloat PeriodBoom;
+  GLuint    Width, Height;
+  GLfloat   WidthLeft, WidthRight, HeightUp, HeightDown;
+  std::vector<GameLevel> Levels;
+  std::vector<PowerUp> PowerUps;
+  std::vector<Bullet> Bullets;
+  std::vector<Boom> Booms;
 };

@@ -42,21 +42,14 @@ void GameLevel::Load(const GLchar *file)
 
 void GameLevel::Draw(SpriteRenderer &renderer)
 {
-  // for (GameObject &tile : this->Bricks)
-  //   if (!tile->Destroyed)
-  //     tile->Draw(renderer);
   for (Enemy *tile : this->Enemys)
-    if (!tile->Destroyed)
+    if (!tile->GetDestroyed())
       tile->Draw(renderer);
 }
 
 GLboolean GameLevel::IsCompleted()
 {
-  // for (GameObject &tile : this->Bricks)
-  //   if(!tile->IsSolid && !tile->Destroyed)
-  //     return GL_FALSE;
-  // return GL_TRUE;
-  if (!this->Boss.Destroyed)
+  if (!this->Boss.GetDestroyed())
     return GL_FALSE;
   return GL_TRUE;
 }
@@ -77,53 +70,9 @@ void GameLevel::init(std::vector<std::vector<GLuint>> tileData)
         this->TypeEnemy.push_back(tileData[y][x]);
       if(x == 3)
         this->NumberEnemy.push_back(tileData[y][x]);
-      // std::cout << tileData[y][x] << ' ';
     }
     this->NumberWaves = this->NumberWaves + 1;
-    // std::cout << std::endl;
   }
-  // width = this->TimeSpawn.size();
-  // for (GLuint x = 0; x < width; ++x)
-  // {
-  //   std::cout << this->TimeSpawn[x] << ' ';
-  // }
-
-  // GLfloat unit_width = levelWidth / static_cast<GLfloat>(width), unit_height = levelHeight / height;
-  //
-  // for (GLuint y = 0; y < height; ++y)
-  // {
-  //   for (GLuint x = 0; x < width; ++x)
-  //   {
-  //     if (tileData[y][x] == 1)
-  //     {
-  //       glm::vec2 pos(unit_width * x, unit_height * y);
-  //       glm::vec2 size(unit_width, unit_height);
-  //       GameObject obj(pos, size, ResourceManager::GetTexture("block_solid"), glm::vec3(0.8f, 0.8f, 0.7f));
-  //       // obj.IsSolid = GL_TRUE;
-  //       this->Enemys.push_back(obj);
-  //     }
-  //     else if (tileData[y][x] > 1)
-  //     {
-  //       glm::vec3 color = glm::vec3(1.0f);
-  //       if (tileData[y][x] == 2)
-  //         color = glm::vec3(0.2f, 0.6f, 1.0f);
-  //       else if (tileData[y][x] == 3)
-  //         color = glm::vec3(0.0f, 0.7f, 0.0f);
-  //       else if (tileData[y][x] == 4)
-  //         color = glm::vec3(0.8f, 0.8f, 0.4f);
-  //       else if (tileData[y][x] == 5)
-  //         color = glm::vec3(1.0f, 0.5f, 0.0f);
-  //
-  //       glm::vec2 pos(unit_width * x, unit_height * y);
-  //       glm::vec2 size(unit_width, unit_height);
-  //       this->Enemys.push_back(GameObject(pos, size, ResourceManager::GetTexture("block"), color));
-  //     }
-  //   }
-  // }
-  // glm::vec2 pos(400, 100);
-  // glm::vec2 size(50, 100);
-  // Enemy obj(pos, size, ResourceManager::GetTexture("car"), glm::vec2(0, 50), 200);
-  // this->Enemys.push_back(obj);
 }
 
 void GameLevel::SpawnEnemys(GLint wave, GLint line)
@@ -133,16 +82,6 @@ void GameLevel::SpawnEnemys(GLint wave, GLint line)
     GLfloat posy = -100 -150*i;
     glm::vec2 pos(210 + 130 * this->Line[wave], posy);
     glm::vec2 size(50, 100);
-    // switch (this->TypeEnemy[wave]) {
-    //   case 1:
-    //     EnemyA* obj= new EnemyA(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 200, this->TypeEnemy[wave]);
-    //     this->Enemys.push_back(obj);
-    //     break;
-    //   default:
-    //     Enemy* obj = new Enemy(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 200, this->TypeEnemy[wave]);
-    //     this->Enemys.push_back(obj);
-    //     break;
-    // }
     if (this->TypeEnemy[wave] == 1)
     {
         EnemyA* obj= new EnemyA(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 200, this->TypeEnemy[wave]);
