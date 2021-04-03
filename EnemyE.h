@@ -14,7 +14,7 @@ public:
   EnemyE()
   : Enemy() {}
   EnemyE(glm::vec2 pos, glm::vec2 size, Texture2D sprite, glm::vec2 velocity, GLfloat hitPoints, GLint type)
-  : Enemy(pos, size, sprite, velocity, hitPoints, type) { }
+  : Enemy(pos, size, sprite, velocity, hitPoints, type) { this->Money = 10; }
   virtual void UpdateEnemy(GLfloat dt, GLfloat WidthLeft, GLfloat WidthRight, GLuint Width, GLuint Height, GLfloat Time) override
   {
     if (this->Damage == GL_TRUE)
@@ -33,7 +33,7 @@ public:
     if (this->Position.x >= (WidthLeft + this->Size.x) && this->Position.x <= (WidthRight - this->Size.x) && this->Position.y > 0)
     {
       this->Position.x += this->Velocity.x;
-      this->Velocity.x = sin(Time) * 150 * dt;
+      this->Velocity.x = sin(Time) * 300 * dt;
       if (this->Position.x < (WidthLeft + this->Size.x))
         this->Position.x = WidthLeft + this->Size.x;
       if (this->Position.x > (WidthRight - this->Size.x))

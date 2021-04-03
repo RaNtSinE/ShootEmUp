@@ -6,7 +6,7 @@
 
 #include "GameObject.h"
 
-const glm::vec2 SIZE_BULLET(15, 15);
+const glm::vec2 SIZE_BULLET(30, 30);
 const glm::vec2 VELOCITY_BULLET(0.0f, -400.0f);
 
 class Bullet : public GameObject

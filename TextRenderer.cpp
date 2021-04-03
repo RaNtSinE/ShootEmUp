@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <glm/gtc/matrix_transform.hpp>
-#include <freetype2/ft2build.h>
+#include <ft2build.h>
 #include FT_FREETYPE_H
 
 #include "TextRenderer.h"

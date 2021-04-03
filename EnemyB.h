@@ -14,7 +14,7 @@ public:
   EnemyB()
   : Enemy() {}
   EnemyB(glm::vec2 pos, glm::vec2 size, Texture2D sprite, glm::vec2 velocity, GLfloat hitPoints, GLint type)
-  : Enemy(pos, size, sprite, velocity, hitPoints, type) { }
+  : Enemy(pos, size, sprite, velocity, hitPoints, type) { this->Money = 7; }
   virtual void UpdateEnemy(GLfloat dt, GLfloat WidthLeft, GLfloat WidthRight, GLuint Width, GLuint Height, GLfloat Time) override
   {
     if (this->Damage == GL_TRUE)

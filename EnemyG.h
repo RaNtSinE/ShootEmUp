@@ -14,7 +14,7 @@ public:
   EnemyG()
   : Enemy() {}
   EnemyG(glm::vec2 pos, glm::vec2 size, Texture2D sprite, glm::vec2 velocity, GLfloat hitPoints, GLint type)
-  : Enemy(pos, size, sprite, velocity, hitPoints, type) { }
+  : Enemy(pos, size, sprite, velocity, hitPoints, type) { this->Money = 15; }
   virtual void UpdateEnemy(GLfloat dt, GLfloat WidthLeft, GLfloat WidthRight, GLuint Width, GLuint Height, GLfloat Time) override
   {
     if (this->Damage == GL_TRUE)
@@ -31,16 +31,16 @@ public:
       this->SetTexture(ResourceManager::GetTexture("redcar5"));
     if (this->Position.y > 0 && this->Position.y < Height / 4)
     {
-      this->Velocity.y -= 20 * dt;
+      this->Velocity.y -= 40 * dt;
     }
     if ((this->Position.y >= Height / 4) && (this->Position.x > WidthLeft + this->Size.x))
     {
-      this->Velocity.x -= 80 * dt;
+      this->Velocity.x -= 160 * dt;
     }
     if (this->Position.x < WidthLeft + this->Size.x && this->Position.x > WidthLeft)
     {
-      this->Velocity.x += 160 * dt;
-      this->Velocity.y += 50 * dt;
+      this->Velocity.x += 320 * dt;
+      this->Velocity.y += 100 * dt;
     }
     this->Position.y += this->Velocity.y * 1.5 * dt;
     if (this->Position.x >= (WidthLeft + this->Size.x) && this->Position.x <= (WidthRight - this->Size.x) && this->Position.y > 0)

@@ -19,7 +19,8 @@ public:
   const std::vector<Enemy*> &GetEnemys() const {return this->Enemys; }
 
   void Load(const GLchar *file);
-  void Draw(SpriteRenderer &renderer);
+  void Draw(SpriteRenderer &renderer, GLfloat Width, GLfloat Height);
+  void DrawHitBar(SpriteRenderer& renderer, GLfloat Width, GLfloat Height);
   GLboolean IsCompleted();
   void SpawnEnemys(GLint wave, GLint line);
 

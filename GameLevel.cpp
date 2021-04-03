@@ -11,6 +11,8 @@
 #include "EnemyJ.h"
 #include "EnemyK.h"
 #include "EnemyL.h"
+#include "BossA.h"
+#include "BossB.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -40,18 +42,44 @@ void GameLevel::Load(const GLchar *file)
 
 }
 
-void GameLevel::Draw(SpriteRenderer &renderer)
+void GameLevel::Draw(SpriteRenderer &renderer, GLfloat Width, GLfloat Height)
 {
   for (Enemy *tile : this->Enemys)
-    if (!tile->GetDestroyed())
-      tile->Draw(renderer);
+	  if (!tile->GetDestroyed())
+	  {
+		  tile->Draw(renderer);
+	  }
+}
+
+void GameLevel::DrawHitBar(SpriteRenderer& renderer, GLfloat Width, GLfloat Height)
+{
+	for (Enemy* tile : this->Enemys)
+		if (!tile->GetDestroyed())
+		{
+			if (tile->GetBoss())
+			{
+				Texture2D myTexture;
+				GLfloat percent = tile->GetHitPoints() / tile->GetMaxHitPoints();
+				myTexture = ResourceManager::GetTexture("infobar");
+				renderer.DrawSprite(myTexture, glm::vec2(Width / 2 - 203 - percent * 23, 0 + 64), glm::vec2(512 * percent, 128), 0.0f, glm::vec3(0.5, 0.0, 0.0));
+
+				myTexture = ResourceManager::GetTexture("bar");
+				renderer.DrawSprite(myTexture, glm::vec2(Width / 2 - 226, 0 + 64), glm::vec2(512, 128), 0.0f, glm::vec3(0.2, 0.2, 0.5));
+			}
+		}
 }
 
 GLboolean GameLevel::IsCompleted()
 {
-  if (!this->Boss.GetDestroyed())
-    return GL_FALSE;
-  return GL_TRUE;
+	for (Enemy* tile : this->Enemys)
+		if (tile->GetBoss())
+		{
+			if (tile->GetDestroyed())
+			{
+				return GL_TRUE;
+			}
+		}
+	return GL_FALSE;
 }
 
 void GameLevel::init(std::vector<std::vector<GLuint>> tileData)
@@ -79,68 +107,78 @@ void GameLevel::SpawnEnemys(GLint wave, GLint line)
 {
   for (GLint i = 0; i < this->NumberEnemy[wave]; ++i)
   {
-    GLfloat posy = -100 -150*i;
-    glm::vec2 pos(210 + 130 * this->Line[wave], posy);
-    glm::vec2 size(50, 100);
+    GLfloat posy = -200 -300*i;
+    glm::vec2 pos(400 + 220 * this->Line[wave], posy);
+    glm::vec2 size(100, 200);
     if (this->TypeEnemy[wave] == 1)
     {
-        EnemyA* obj= new EnemyA(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 200, this->TypeEnemy[wave]);
+        EnemyA* obj= new EnemyA(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 160), 200, this->TypeEnemy[wave]);
         this->Enemys.push_back(obj);
     }
     if (this->TypeEnemy[wave] == 2)
     {
-      EnemyB* obj= new EnemyB(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 150, this->TypeEnemy[wave]);
+      EnemyB* obj= new EnemyB(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 160), 150, this->TypeEnemy[wave]);
       this->Enemys.push_back(obj);
     }
     if (this->TypeEnemy[wave] == 3)
     {
-      EnemyC* obj= new EnemyC(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 150, this->TypeEnemy[wave]);
+      EnemyC* obj= new EnemyC(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 160), 150, this->TypeEnemy[wave]);
       this->Enemys.push_back(obj);
     }
     if (this->TypeEnemy[wave] == 4)
     {
-      EnemyD* obj= new EnemyD(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 100, this->TypeEnemy[wave]);
+      EnemyD* obj= new EnemyD(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 160), 100, this->TypeEnemy[wave]);
       this->Enemys.push_back(obj);
     }
     if (this->TypeEnemy[wave] == 5)
     {
-      EnemyE* obj= new EnemyE(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 200, this->TypeEnemy[wave]);
+      EnemyE* obj= new EnemyE(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 160), 200, this->TypeEnemy[wave]);
       this->Enemys.push_back(obj);
     }
     if (this->TypeEnemy[wave] == 6)
     {
-      EnemyF* obj= new EnemyF(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 150, this->TypeEnemy[wave]);
+      EnemyF* obj= new EnemyF(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 160), 150, this->TypeEnemy[wave]);
       this->Enemys.push_back(obj);
     }
     if (this->TypeEnemy[wave] == 7)
     {
-      EnemyG* obj= new EnemyG(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 150, this->TypeEnemy[wave]);
+      EnemyG* obj= new EnemyG(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 160), 150, this->TypeEnemy[wave]);
       this->Enemys.push_back(obj);
     }
     if (this->TypeEnemy[wave] == 8)
     {
-      EnemyH* obj= new EnemyH(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 100, this->TypeEnemy[wave]);
+      EnemyH* obj= new EnemyH(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 160), 100, this->TypeEnemy[wave]);
       this->Enemys.push_back(obj);
     }
     if (this->TypeEnemy[wave] == 9)
     {
-      EnemyI* obj= new EnemyI(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 100, this->TypeEnemy[wave]);
+      EnemyI* obj= new EnemyI(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 160), 100, this->TypeEnemy[wave]);
       this->Enemys.push_back(obj);
     }
     if (this->TypeEnemy[wave] == 10)
     {
-      EnemyJ* obj= new EnemyJ(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 100, this->TypeEnemy[wave]);
+      EnemyJ* obj= new EnemyJ(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 160), 100, this->TypeEnemy[wave]);
       this->Enemys.push_back(obj);
     }
     if (this->TypeEnemy[wave] == 11)
     {
-      EnemyK* obj= new EnemyK(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 100, this->TypeEnemy[wave]);
+      EnemyK* obj= new EnemyK(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 160), 100, this->TypeEnemy[wave]);
       this->Enemys.push_back(obj);
     }
     if (this->TypeEnemy[wave] == 12)
     {
-      EnemyL* obj= new EnemyL(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 80), 700, this->TypeEnemy[wave]);
+      EnemyL* obj= new EnemyL(pos, size, ResourceManager::GetTexture("redcar5"), glm::vec2(0, 160), 600, this->TypeEnemy[wave]);
       this->Enemys.push_back(obj);
+    }
+	if (this->TypeEnemy[wave] == 100)
+	{ 
+		BossA* obj = new BossA(pos, size, ResourceManager::GetTexture("bossa"), glm::vec2(0, 160), 8000, this->TypeEnemy[wave]);
+		this->Enemys.push_back(obj);
+	}
+    if (this->TypeEnemy[wave] == 101)
+    {
+        BossB* obj = new BossB(pos, size, ResourceManager::GetTexture("bossa"), glm::vec2(0, 160), 10000, this->TypeEnemy[wave]);
+        this->Enemys.push_back(obj);
     }
   }
 }

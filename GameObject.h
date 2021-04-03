@@ -24,6 +24,7 @@ public:
   GLboolean GetDestroyed() const { return this->Destroyed; }
   void SetPositionX(GLfloat posx) { this->Position.x = posx; }
   void SetPositionY(GLfloat posy) { this->Position.y = posy; }
+  void SetPosition(glm::vec2 position) { this->Position = position;  }
   void SetColor(glm::vec3 color) { this->Color = color; }
   void SetRotation(GLfloat rotation) { this->Rotation = rotation; }
   void SetDestroyed(GLboolean destroyed) { this->Destroyed = destroyed; }
