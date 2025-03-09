@@ -48,7 +48,7 @@ Game::Game(GLuint width, GLuint height)
 	RedState(RED_NOT), Keys(), KeysProcessed(), Width(width), Height(height), Level(0),Car(0), Lives(3), Velocity(0), Time(0),
 	PeriodBullet(1), PeriodBulletEnemy(1), PeriodOpen(1), PeriodInvincible(1), PeriodBoom(1), WidthLeft(width),
 	HeightUp(height), WidthRight(width), HeightDown(height), TimeSpeed(1), SlowTime(GL_FALSE), Pause(GL_FALSE),
-	MusicVolume(0), SoundVolume(1), Money(10000)
+	MusicVolume(0.3), SoundVolume(1), Money(10000)
 {
 
 }

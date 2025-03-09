@@ -21,8 +21,8 @@ public:
 		this->BulletDamage = 34;
 		this->MaxBulletDamage = 34;
 		this->BulletVelocity = glm::vec2(0, -800);
-		this->HitPoints = 200;
-		this->MaxHitPoints = 200;
+		this->HitPoints = 400;
+		this->MaxHitPoints = 400;
 		this->RotateLeft = GL_FALSE;
 		this->RotateRight = GL_FALSE;
 		this->ShootSpeed = 22;
